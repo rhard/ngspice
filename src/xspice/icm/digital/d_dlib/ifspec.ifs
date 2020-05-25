@@ -1,0 +1,136 @@
+/*.......1.........2.........3.........4.........5.........6.........7.........8
+================================================================================
+Copyright 2020
+Rhard
+
+AUTHORS                      
+
+    25 Mai 2020     Rhard
+
+
+SUMMARY
+
+    This file contains the interface specification file for the 
+    hybrid dlib code model.
+
+===============================================================================*/
+
+NAME_TABLE:
+
+Spice_Model_Name:              d_dlib
+C_Function_Name:               cm_dlib
+Description:                  "dynamic library block"
+
+
+PORT_TABLE:
+
+Port_Name:                     din                   ain
+Description:                  "digital inputs"      "analog inputs"
+Direction:                      in                    in
+Default_Type:                   d                     vd
+Allowed_Types:                 [d]                   [vd]
+Vector:                        yes                    yes
+Vector_Bounds:                  -                      -
+Null_Allowed:                  yes                    yes
+
+PORT_TABLE:
+
+Port_Name:                     dout                   aout
+Description:                  "digital outputs"      "analog outputs"
+Direction:                      out                   out
+Default_Type:                   d                     vd
+Allowed_Types:                 [d]                   [vd]
+Vector:                        yes                    yes
+Vector_Bounds:                  -                      -
+Null_Allowed:                  yes                    yes
+
+PORT_TABLE:
+
+Port_Name:                     clk                   reset
+Description:                  "clock"               "reset"
+Direction:                      in                    in
+Default_Type:                   d                     d
+Allowed_Types:                 [d]                   [d]
+Vector:                         no                    no
+Vector_Bounds:                  -                      -
+Null_Allowed:                  no                     yes
+
+
+PARAMETER_TABLE:
+
+Parameter_Name:     clk_delay           reset_delay
+Description:        "delay from CLK"    "delay from reset"
+Data_Type:          real                real
+Default_Value:      1.0e-9              1.0e-9
+Limits:             -                   -          
+Vector:              no                  no
+Vector_Bounds:       -                   -           
+Null_Allowed:       yes                 yes       
+
+
+PARAMETER_TABLE:
+
+Parameter_Name:     dlib
+Description:        "dynamic lib file path"
+Data_Type:          string 
+Default_Value:      "process"                       
+Limits:             -                                  
+Vector:              no                              
+Vector_Bounds:       -                                
+Null_Allowed:       no                          
+
+
+PARAMETER_TABLE:
+
+Parameter_Name:     reset_state
+Description:        "default state on RESET & at DC"  
+Data_Type:          int 
+Default_Value:      0                       
+Limits:             -                                  
+Vector:              no                              
+Vector_Bounds:       -                                
+Null_Allowed:       no                          
+
+
+PARAMETER_TABLE:
+
+
+Parameter_Name:     d_input_load
+Description:        "input loading capacitance (F)"  
+Data_Type:          real 
+Default_Value:      1.0e-12                       
+Limits:             -                                  
+Vector:              no                              
+Vector_Bounds:       -                                
+Null_Allowed:       no                          
+
+
+PARAMETER_TABLE:
+
+
+Parameter_Name:     clk_load
+Description:        "clock loading capacitance (F)"  
+Data_Type:          real 
+Default_Value:      1.0e-12                       
+Limits:             -                                  
+Vector:              no                              
+Vector_Bounds:       -                                
+Null_Allowed:       no                          
+PARAMETER_TABLE:
+
+
+Parameter_Name:     reset_load
+Description:        "reset loading capacitance (F)"  
+Data_Type:          real 
+Default_Value:      1.0e-12                       
+Limits:             -                                  
+Vector:              no                              
+Vector_Bounds:       -                                
+Null_Allowed:       no                          
+
+
+STATIC_VAR_TABLE:
+
+Static_Var_Name:    dlib_instance
+Description:        "dlib instance pointer"
+Data_Type:          pointer
