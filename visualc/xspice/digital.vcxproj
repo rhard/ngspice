@@ -228,6 +228,8 @@
       <AdditionalIncludeDirectories>..\..\src\xspice\%(RelativeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <ClCompile Include="icm\digital\d_dlatch\d_dlatch-ifspec.c" />
+    <ClCompile Include="icm\digital\d_dlib\d_dlib-cfunc.c" />
+    <ClCompile Include="icm\digital\d_dlib\d_dlib-ifspec.c" />
     <ClCompile Include="icm\digital\d_fdiv\d_fdiv-cfunc.c">
       <AdditionalIncludeDirectories>..\..\src\xspice\%(RelativeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
