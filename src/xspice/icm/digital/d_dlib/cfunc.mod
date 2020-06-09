@@ -18,18 +18,15 @@ SUMMARY
     
 ===============================================================================*/
 
-#include <stdio.h>
-#include <ctype.h>
-#include <math.h>
-#include <string.h>
 #include <stdlib.h>
-#include <io.h>
-#include <fcntl.h>
 
 typedef struct {
-    void    *data;
-    uint8_t N_din, N_dout;          // number of inputs/outputs bytes   
-    Digital_State_t dout_old[256];  // max possible storage to track output changes
+    void    *data;                      // dll data
+    double  *dll_ain;                   // dll analog inputs
+    double  *dll_aout;                  // dll analog outputs
+    uint8_t *dll_din;                   // dll digital inputs
+    uint8_t *dll_dout;                  // dll digital outputs
+    Digital_State_t *dout_old;          // max possible storage to track output changes
 } Instance_t;
 
 
@@ -57,8 +54,15 @@ void cm_dlib(ARGS) {
         /* Create block instance data */
         STATIC_VAR(dlib_instance) = malloc(sizeof(Instance_t));        
         instance = STATIC_VAR(dlib_instance);
-        instance->N_din = PORT_SIZE(din);
-        instance->N_dout = PORT_SIZE(dout);
+        instance->dll_ain = malloc(PORT_SIZE(ain) * sizeof(double));
+        instance->dll_aout = malloc(PORT_SIZE(aout) * sizeof(double));
+        instance->dll_din = malloc(PORT_SIZE(din) * sizeof(uint8_t));
+        instance->dll_dout = malloc(PORT_SIZE(dout) * sizeof(uint8_t));        
+        instance->dout_old = malloc(PORT_SIZE(dout) * sizeof(Digital_State_t));
+
+        for (i=0; i<PORT_SIZE(aout); i++) {
+           instance->dll_aout[i] = 0.0;
+        }
         
         /* Set d-inputs load */
         for (i=0; i<PORT_SIZE(din); i++) {
@@ -70,6 +74,7 @@ void cm_dlib(ARGS) {
         if ( !PORT_NULL(reset) )
             LOAD(reset) = PARAM(reset_load);
         
+        cm_message_printf("DLIB: Block has %i, %i, %i, %i ports\n", PORT_SIZE(ain), PORT_SIZE(aout), PORT_SIZE(din), PORT_SIZE(dout));
         cm_message_printf("DLIB: Block initialized\n");
 
     } else {    /*** This is not an initialization pass...retrieve storage
@@ -86,7 +91,11 @@ void cm_dlib(ARGS) {
         reset_old = (Digital_State_t *) cm_event_get_ptr(1,1);
         
     }
-                            
+
+
+    for (i=0; i<PORT_SIZE(ain); i++) { /****** Read current analog values ******/
+        instance->dll_ain[i] = INPUT(ain[i]);
+    }                        
 
     if ( 0.0 == TIME ) {    /****** DC analysis...output w/o delays ******/
     
@@ -94,10 +103,6 @@ void cm_dlib(ARGS) {
             instance->dout_old[i]       = UNKNOWN;
             OUTPUT_STATE(dout[i])       = UNKNOWN;
             OUTPUT_STRENGTH(dout[i])    = HI_IMPEDANCE;
-        }
-        
-        for (i=0; i<PORT_SIZE(aout); i++) {
-            OUTPUT(aout[i]) = 0.0;
         }
         
     } else {  /*** TIME == 0.0 => set outputs to input value... ***/
@@ -112,24 +117,27 @@ void cm_dlib(ARGS) {
         }
 
         if (*clk != *clk_old && ONE == *clk) {
-        
-            uint8_t _dout[instance->N_dout];                    
-            uint8_t _din[instance->N_din];
-            memset(_din, 0, PORT_SIZE(din));
 
+            //cm_message_printf("DLIB: Step call\n");
+            //cm_message_printf("DLIB: Digital inputs are:\n");
+        
             for (i=0; i<PORT_SIZE(din); i++) {
                 switch(INPUT_STATE(din[i])) {
-                    case ZERO: _din[i] = 0; break;
-                    case ONE:  _din[i] = 1; break;
-                    default:   _din[i] = random() & 1; break;
+                    case ZERO: instance->dll_din[i] = 0; break;
+                    case ONE:  instance->dll_din[i] = 1; break;
+                    default:   instance->dll_din[i] = rand() & 1; break;
                 }
+                //cm_message_printf("DLIB: Din %i - %i\n", i, instance->dll_din[i]);
             }
 
-            //dprocess_exchangedata(local_process, (ONE != *reset) ? TIME : -TIME, din, dout);
+            //cm_message_printf("DLIB:Analog inputs are:\n");
+            for (i=0; i<PORT_SIZE(ain); i++) {
+                //cm_message_printf("DLIB: Ain %i - %f\n", i, instance->dll_ain[i]);
+            }
             
-            for (int i=0; i<PORT_SIZE(dout); i++) {
+            for (i=0; i<PORT_SIZE(dout); i++) {                
                 
-                Digital_State_t new_state = _dout[i] ? ONE : ZERO;
+                Digital_State_t new_state = instance->dll_dout[i] ? ONE : ZERO;
                 
                 if (new_state != instance->dout_old[i]) {
                     OUTPUT_STATE(dout[i])    = new_state;
@@ -149,6 +157,11 @@ void cm_dlib(ARGS) {
             }
             
         }
+
+    }
+
+    for (i=0; i<PORT_SIZE(aout); i++) {
+        OUTPUT(aout[i]) = instance->dll_aout[i];
     }
 }
 
